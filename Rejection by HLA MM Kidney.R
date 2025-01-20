@@ -446,9 +446,9 @@ EXPOSURES <- data_kidney_clean %>%
 ALLELES <- c("a", "b", "dr")
 
 # Specify formulas for propensity score models for each allele (HLA-A, -B, & -DR)
-FORMULA_PS_AMIS <- as.formula(paste("exp_amis ~ ", paste(CONFOUNDERS, collapse = " + ")))
-FORMULA_PS_BMIS <- as.formula(paste("exp_bmis ~ ", paste(CONFOUNDERS, collapse = " + ")))
-FORMULA_PS_DRMIS <- as.formula(paste("exp_drmis ~ ", paste(CONFOUNDERS, collapse = " + ")))
+FORMULA_PS_AMIS <- as.formula(paste("exp_amis ~ exp_bmis + exp_drmis +", paste(CONFOUNDERS, collapse = " + ")))
+FORMULA_PS_BMIS <- as.formula(paste("exp_bmis ~ exp_amis + exp_drmis + ", paste(CONFOUNDERS, collapse = " + ")))
+FORMULA_PS_DRMIS <- as.formula(paste("exp_drmis ~ exp_amis + exp_bmis + ", paste(CONFOUNDERS, collapse = " + ")))
 
 # Estimate IP weighted KM curves for each allele (Run time ~ 1 hour)
 ### HLA-A ----
@@ -458,11 +458,10 @@ FORMULA_PS_DRMIS <- as.formula(paste("exp_drmis ~ ", paste(CONFOUNDERS, collapse
 #                                    event = "out_gstatus",
 #                                    method = "iptw_km",
 #                                    stabilize = TRUE,
-#                                    #trim_quantiles = c(0.01, 0.99),
 #                                    treatment_model = FORMULA_PS_AMIS,
-#                                    conf_int = TRUE, 
+#                                    conf_int = TRUE,
 #                                    conf_level = 0.95,
-#                                    times = NULL, 
+#                                    times = NULL,
 #                                    bootstrap = TRUE,
 #                                    n_boot = 500,
 #                                    n_cores = 8)
@@ -479,11 +478,10 @@ load(file = paste0(DIR_DATA, "adjusted_surv_amis.Rdata"))
 #                                    event = "out_gstatus",
 #                                    method = "iptw_km",
 #                                    stabilize = TRUE,
-#                                    #trim_quantiles = c(0.01, 0.99),
 #                                    treatment_model = FORMULA_PS_BMIS,
-#                                    conf_int = TRUE, 
+#                                    conf_int = TRUE,
 #                                    conf_level = 0.95,
-#                                    times = NULL, 
+#                                    times = NULL,
 #                                    bootstrap = TRUE,
 #                                    n_boot = 500,
 #                                    n_cores = 8)
@@ -499,11 +497,10 @@ load(file = paste0(DIR_DATA, "adjusted_surv_bmis.Rdata"))
 #                                    event = "out_gstatus",
 #                                    method = "iptw_km",
 #                                    stabilize = TRUE,
-#                                    #trim_quantiles = c(0.01, 0.99),
 #                                    treatment_model = FORMULA_PS_DRMIS,
-#                                    conf_int = TRUE, 
+#                                    conf_int = TRUE,
 #                                    conf_level = 0.95,
-#                                    times = NULL, 
+#                                    times = NULL,
 #                                    bootstrap = TRUE,
 #                                    n_boot = 500,
 #                                    n_cores = 8)
@@ -520,12 +517,13 @@ plot_hla_a_adj_km <- plot(adjusted_surv_amis,
                           risk_table_stratify = TRUE,
                           use_boot = TRUE,
                           conf_int = TRUE,
+                          max_t = 5475,
                           xlab = "Time Since Transplant (Days)",
                           ylab = "Weighted Survival Probability (%)",
                           legend.title = "No. Mismatches",
                           legend.position = "bottom",
                           conf_int_alpha = 0.25,
-                          x_breaks = c(0, 1825, 3650, 5475, 7300),
+                          x_breaks = c(0, 1825, 3650, 5475),
                           y_breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
                           risk_table_ylab = "",
                           gg_theme = theme_minimal())
@@ -535,12 +533,13 @@ plot_hla_b_adj_km <- plot(adjusted_surv_bmis,
                           risk_table_stratify = TRUE,
                           use_boot = TRUE,
                           conf_int = TRUE,
+                          max_t = 5475,
                           xlab = "Time Since Transplant (Days)",
                           ylab = "Weighted Survival Probability (%)",
                           legend.title = "No. Mismatches",
                           legend.position = "bottom",
                           conf_int_alpha = 0.25,
-                          x_breaks = c(0, 1825, 3650, 5475, 7300),
+                          x_breaks = c(0, 1825, 3650, 5475),
                           y_breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
                           risk_table_ylab = "",
                           gg_theme = theme_minimal())
@@ -550,12 +549,13 @@ plot_hla_dr_adj_km <- plot(adjusted_surv_drmis,
                           risk_table_stratify = TRUE,
                           use_boot = TRUE,
                           conf_int = TRUE,
+                          max_t = 5475,
                           xlab = "Time Since Transplant (Days)",
                           ylab = "Weighted Survival Probability (%)",
                           legend.title = "No. Mismatches",
                           legend.position = "bottom",
                           conf_int_alpha = 0.25,
-                          x_breaks = c(0, 1825, 3650, 5475, 7300),
+                          x_breaks = c(0, 1825, 3650, 5475),
                           y_breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
                           risk_table_ylab = "",
                           gg_theme = theme_minimal())
@@ -609,9 +609,9 @@ for (o in 1:length(adjustedsurv_obj)) {
 # Runtime ~ 2 mins
 
 ### HLA-A ----
-# adjusted_rmst_amis <- adjusted_rmst(adjsurv = adjusted_surv_amis, 
+# adjusted_rmst_amis <- adjusted_rmst(adjsurv = adjusted_surv_amis,
 #                                     from = 0,
-#                                     to = c(365, 1825, 3650, 5475), 
+#                                     to = c(365, 1825, 3650, 5475),
 #                                     conf_int = TRUE,
 #                                     conf_level = 0.95)
 
@@ -620,9 +620,9 @@ for (o in 1:length(adjustedsurv_obj)) {
 load(file = paste0(DIR_DATA, "adjusted_rmst_amis.Rdata"))
 
 ### HLA-B ----
-# adjusted_rmst_bmis <- adjusted_rmst(adjsurv = adjusted_surv_bmis, 
+# adjusted_rmst_bmis <- adjusted_rmst(adjsurv = adjusted_surv_bmis,
 #                                     from = 0,
-#                                     to = c(365, 1825, 3650, 5475), 
+#                                     to = c(365, 1825, 3650, 5475),
 #                                     conf_int = TRUE,
 #                                     conf_level = 0.95)
 
@@ -632,9 +632,9 @@ load(file = paste0(DIR_DATA, "adjusted_rmst_bmis.Rdata"))
 
 
 ### HLA-DR ----
-# adjusted_rmst_drmis <- adjusted_rmst(adjsurv = adjusted_surv_drmis, 
+# adjusted_rmst_drmis <- adjusted_rmst(adjsurv = adjusted_surv_drmis,
 #                                     from = 0,
-#                                     to = c(365, 1825, 3650, 5475), 
+#                                     to = c(365, 1825, 3650, 5475),
 #                                     conf_int = TRUE,
 #                                     conf_level = 0.95)
 
@@ -710,8 +710,6 @@ for (e in 1:length(EXPOSURES)) {
               file = paste0(DIR_OUTPUT, "Baseline Table - Prior to Imputation & Weighting - ",
                             "Stratified by HLA-", toupper(ALLELES[e]), " Mismatch - SMD.csv"))
 }
-
-
 
 ### Cohort After Imputation and Before Weighting ----
 
@@ -838,11 +836,11 @@ for (o in 1:length(adjustedrmst_obj)) {
   table_clean <- get(adjustedrmst_obj[o]) %>% 
     mutate(`Time (Years)`= to / 365,
            `Mismatch No.` = group,
-           `RMST - Days (95% CI)` = paste0(round(rmst), " (", round(ci_lower), 
-                                           ", ", round(ci_upper), ")"),
-           `RMST - Years (95% CI)` = paste0(round(rmst / 365, 2), 
-                                            " (", round(ci_lower / 365, 2), ", ", 
-                                            round(ci_upper / 365, 2), ")")) %>% 
+           `RMST - Days (95% CI)` = paste0(format(round(rmst), 2), " (", format(round(ci_lower), 2), 
+                                           ", ", format(round(ci_upper), 2), ")"),
+           `RMST - Years (95% CI)` = paste0(format(round(rmst / 365, 2), 2), 
+                                            " (", format(round(ci_lower / 365, 2), 2), ", ", 
+                                            format(round(ci_upper / 365, 2), 2), ")")) %>% 
     select(-c(to, group, rmst, se, ci_lower, ci_upper, n_boot))
   
   # Save file
